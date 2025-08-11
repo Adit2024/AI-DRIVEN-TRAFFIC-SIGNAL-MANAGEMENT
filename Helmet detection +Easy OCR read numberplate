@@ -1,0 +1,48 @@
+import cv2
+import easyocr
+
+# Load the image
+image_path = r"C:\Users\HP\Downloads\helmet_test.jpg"  # Update this if file name changes
+img = cv2.imread(image_path)
+
+if img is None:
+    print("Image not found. Check the path.")
+    exit()
+
+# OCR for number plate
+reader = easyocr.Reader(['en'])
+ocr_results = reader.readtext(img)
+
+# Extract number plate
+number_plate = "Not Detected"
+for (bbox, text, prob) in ocr_results:
+    if prob > 0.5 and len(text) > 5:
+        number_plate = text
+        (tl, tr, br, bl) = bbox
+        tl = tuple(map(int, tl))
+        br = tuple(map(int, br))
+        cv2.rectangle(img, tl, br, (0, 255, 255), 2)
+        cv2.putText(img, text, (tl[0], tl[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+        break
+
+# Simulate Helmet Detection as "Not Present"
+helmet_detected = False
+
+# Fine logic
+if helmet_detected:
+    status = "Helmet Worn - No Fine"
+    color = (0, 255, 0)
+    fine = 0
+else:
+    status = "No Helmet - ₹1000 Fine"
+    color = (0, 0, 255)
+    fine = 1000
+
+# Display helmet status and number plate
+cv2.putText(img, f"{status}", (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2)
+cv2.putText(img, f"Plate: {number_plate}", (20, 80), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
+
+# Show the image
+cv2.imshow("Helmet & Fine Detection", img)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
